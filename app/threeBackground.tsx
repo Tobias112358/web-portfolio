@@ -5,9 +5,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useResizeDetector } from 'react-resize-detector';
 import { ModelNode, color } from "three/examples/jsm/nodes/Nodes.js";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import THREE, { MeshBasicMaterial, Vector3 } from "three";
+import THREE, { MeshBasicMaterial, MeshPhysicalMaterial, Vector3 } from "three";
 import CanvasTools  from "./CanvasTools";
+import {Model} from './Folder';
 
+function MyMaterial(props:any) {
+    return 
+}
 
 function PageMesh(props: any) {
 
@@ -20,6 +24,24 @@ function PageMesh(props: any) {
 
     const [whichWay, setWay] = useState(false);
     const [folderModel, setFolderModel] = useState<any>(useLoader(GLTFLoader, '/folder.glb'));
+    const [deltaSum, setDeltaSum] = useState<number>(-2);
+
+    const [opacity, setOpacity] = useState<number>(0);
+
+    //const [material, setMaterial] = useState<THREE.MeshPhysicalMaterial>(new THREE.MeshPhysicalMaterial({
+    //    color: props.color,
+    //    roughness: 0.5,
+    //    metalness: 0.5,
+    //    transmission: 1,
+    //    thickness: 0.5,
+    //    clearcoat: 1,
+    //    clearcoatRoughness: 0.5,
+    //    reflectivity: 0.5,
+    //    ior: 1.5,
+    //    envMapIntensity: 0.5,
+    //    opacity: 0.5,
+    //    side: THREE.DoubleSide,
+    //}));
 
     useFrame((state, delta) => {
 
@@ -30,23 +52,41 @@ function PageMesh(props: any) {
         }
         //whichWay ? ref.current.rotation.x -= delta/8 : ref.current.rotation.x += delta/8;
 
-        ref.current.position.z -= delta/2;
+        if(ref.current.position.z > -2.2)
+        {
+            setDeltaSum(deltaSum + delta);
+            ref.current.position.z = 0.9/(deltaSum+2) - 2.51//(delta)/(3+ref.current.position.z);
+            setOpacity(-(ref.current.position.z)-1.125);
+            ref.current
+        }
 
+        if(props.color == "green")
+        {
+            console.log(props.color)
+            console.log(ref.current.position.z)    
+
+            console.log(ref.current)
+        }
         setRot(ref.current.rotation.x);
     })
-
+    
     return(
         
-        <mesh  ref={ref} position={[0,-0.2,-2]} onPointerOver={(event) => setHover(true)} onPointerOut={(event) => setHover(false)} >
+        <mesh  ref={ref} position={[0,0,0]} onPointerOver={(event) => setHover(true)} onPointerOut={(event) => setHover(false)} >
             {/*<boxGeometry attach="geometry" args={[5, 2, 1]} />*/}
-            <primitive object={folderModel.scene} scale={3} rotation={[0, -Math.PI/2, 0]} position={[0.1, 0, 0]} children-0-castShadow />
-            <meshStandardMaterial color={hovered ? 'hotpink' : '#365314'} opacity={props.opacity}/>
-            <Html scale={0.1} position={[0,0,0.5]} transform >
-                <div className="w-dvw text-3xl bg-gradient-radial from-lime-800">
-                <p>{props.text}</p>
-                <p>{props.canvasToolsHeight}</p>
-                </div>
-            </Html>
+            <Model scale={3} rotation={[0, -Math.PI/2, 0]} position={[0.1 + (props.order/5), -0.625+(props.order/4), -((props.order/2)-0.5)]} color={props.color} opacity={opacity}>
+            </Model>
+            {/*<primitive object={folderModel.scene} scale={3} rotation={[0, -Math.PI/2, 0]} position={[0.1, 0, 0]} children-0-castShadow children-0-material-color={props.color} children-0-material-transparent="true" children-0-material-opacity={opacity} />
+            <meshStandardMaterial color={hovered ? 'hotpink' : '#36FF14'} opacity={opacity}/>*/}
+
+            <Html scale={0.125} position={[0 + (props.order/5), -0.625+(props.order/4), -((props.order/2)-0.5)]} transform hidden={props.order != 1 ? true : false}>
+                    <div className="w-dvw text-3xl border-4 border-purple-500 bg-gradient-to-t from-purple-700 to-purple-100 hover:animate-spin" hidden={props.order != 1 ? true : false}>
+                    <p>{props.text}</p>
+                    <br/>
+                    <p className="text-center">Page {props.order}</p>
+                    </div>
+                </Html>
+
         </mesh>
     )
 }
@@ -89,7 +129,10 @@ export function ThreeBackground(props: any) {
             <Canvas camera={{ position: [0, 0, 0] }}>
                 <ambientLight />
                 <pointLight intensity={10.0} position={lightPos} decay={0.1} />
-                <PageMesh text={props.text} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
+                <PageMesh text={props.text} order={1} color={"blue"} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
+                <PageMesh text={props.text} order={2} color={"yellow"} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
+                <PageMesh text={props.text} order={3} color={"purple"} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
+                <PageMesh text={props.text} order={4} color={"green"} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
             </Canvas>
         </div>
     </div>
