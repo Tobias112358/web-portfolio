@@ -78,7 +78,7 @@ function PageMesh(props: any) {
             </Model>
             {/*<primitive object={folderModel.scene} scale={3} rotation={[0, -Math.PI/2, 0]} position={[0.1, 0, 0]} children-0-castShadow children-0-material-color={props.color} children-0-material-transparent="true" children-0-material-opacity={opacity} />
             <meshStandardMaterial color={hovered ? 'hotpink' : '#36FF14'} opacity={opacity}/>*/}
-            <Text scale={0.15} position={[0 + (props.order/5), -0.625+(props.order/4), -((props.order/2)-0.6)]} maxWidth={20} fillOpacity={opacity} outlineOpacity={opacity/1.4} color={"#FFDEFF"} outlineColor={"#004500"} outlineWidth={0.05}>{props.text}</Text>
+            <Text scale={0.15} position={[0 + (props.order/5), -0.625+(props.order/4), -((props.order/2)-0.6)]} maxWidth={20} fillOpacity={opacity} outlineOpacity={opacity/1.4} color={"#FFDEFF"} outlineColor={"#152010"} outlineWidth={0.05}>{props.text}</Text>
             {/*<Html scale={0.125} position={[0 + (props.order/5), -0.625+(props.order/4), -((props.order/2)-0.5)]} transform hidden={props.order != 1 ? true : false}>
                     <div className="w-dvw text-3xl border-4 border-purple-500 bg-gradient-to-t from-purple-700 to-purple-100 hover:animate-spin" hidden={props.order != 1 ? true : false}>
                     <p>{props.text}</p>
@@ -152,11 +152,14 @@ export function ThreeBackground(props: any) {
 
     return(
     <div className="h-screen">
-        <CanvasTools ref={canvasToolsRef} lightPos={lightPos} setLightPos={setLightPos} opacity={opacity} setOpacity={setOpacity} display={true} />
+        <CanvasTools ref={canvasToolsRef} lightPos={lightPos} setLightPos={setLightPos} opacity={opacity} setOpacity={setOpacity} display={false} />
         <div className={`${ toolsOffsetVariants[canvasToolsHeight as keyof typeof toolsOffsetVariants]}`}>
             <Canvas onClick={nextPage} camera={{ position: [0, 0, 0] }} color="#FFFFFF">
                 <ambientLight />
-                <pointLight intensity={10.0} position={lightPos} decay={0.2} />
+                <mesh  position={[1, 0, 0]} >
+      <sphereGeometry args={[-14.4, 10, undefined]} />
+      <meshStandardMaterial color={'black'} opacity={0.9} transparent /></mesh>
+                <pointLight intensity={20.0} position={lightPos} decay={0.2} />
                 <PageMesh text={pages[0].text} order={pages[0].order} color={pages[0].color} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
                 <PageMesh text={pages[1].text} order={pages[1].order} color={pages[1].color} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
                 <PageMesh text={pages[2].text} order={pages[2].order} color={pages[2].color} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
