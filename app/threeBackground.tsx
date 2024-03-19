@@ -62,10 +62,10 @@ function PageMesh(props: any) {
 
         if(props.color == "green")
         {
-            console.log(props.color)
-            console.log(ref.current.position.z)    
+            //console.log(props.color)
+            //console.log(ref.current.position.z)    
 
-            console.log(ref.current)
+            //console.log(ref.current)
         }
         setRot(ref.current.rotation.x);
     })
@@ -78,17 +78,23 @@ function PageMesh(props: any) {
             </Model>
             {/*<primitive object={folderModel.scene} scale={3} rotation={[0, -Math.PI/2, 0]} position={[0.1, 0, 0]} children-0-castShadow children-0-material-color={props.color} children-0-material-transparent="true" children-0-material-opacity={opacity} />
             <meshStandardMaterial color={hovered ? 'hotpink' : '#36FF14'} opacity={opacity}/>*/}
-
-            <Html scale={0.125} position={[0 + (props.order/5), -0.625+(props.order/4), -((props.order/2)-0.5)]} transform hidden={props.order != 1 ? true : false}>
+            <Text scale={0.15} position={[0 + (props.order/5), -0.625+(props.order/4), -((props.order/2)-0.6)]} maxWidth={20} fillOpacity={opacity} outlineOpacity={opacity/2} outlineWidth={0.1}>{props.text}</Text>
+            {/*<Html scale={0.125} position={[0 + (props.order/5), -0.625+(props.order/4), -((props.order/2)-0.5)]} transform hidden={props.order != 1 ? true : false}>
                     <div className="w-dvw text-3xl border-4 border-purple-500 bg-gradient-to-t from-purple-700 to-purple-100 hover:animate-spin" hidden={props.order != 1 ? true : false}>
                     <p>{props.text}</p>
                     <br/>
                     <p className="text-center">Page {props.order}</p>
                     </div>
                 </Html>
-
+        */}
         </mesh>
     )
+}
+
+type Page = {
+    text: string;
+    order: number;
+    color: string;
 }
 
 
@@ -101,6 +107,13 @@ export function ThreeBackground(props: any) {
 
     const [canvasToolsHeight, setCanvasToolsHeight] = useState<number>(0);
     const canvasToolsRef = useRef<HTMLDivElement>(null!);
+
+    const [pages, setPages] = useState<Page[]>([
+        {text: props.text, order: 1, color: "blue"},
+        {text: "Another thing here!", order: 2, color: "yellow"},
+        {text: "Page 3", order: 3, color: "purple"},
+        {text: "Page 4", order: 4, color: "green"},
+    ]);
 
     const toolsOffsetVariants = {
         0: "h-screen",
@@ -120,19 +133,31 @@ export function ThreeBackground(props: any) {
         onResize: onToolbarResize
     });
 
+    const nextPage = () => {
+        var newPages: Page[] = [];
+        pages.forEach(page => {
+            var newPage = page;
+            newPage.order = ((page.order-1) % 4)
+            if(newPage.order == 0) newPage.order = 4;
+            newPages.push(newPage)
+            console.log(newPage);
+        });
+        setPages(newPages);
+    }
+
 
 
     return(
     <div className="h-screen">
         <CanvasTools ref={canvasToolsRef} lightPos={lightPos} setLightPos={setLightPos} opacity={opacity} setOpacity={setOpacity} display={false} />
         <div className={`${ toolsOffsetVariants[canvasToolsHeight as keyof typeof toolsOffsetVariants]}`}>
-            <Canvas camera={{ position: [0, 0, 0] }}>
+            <Canvas onClick={nextPage} camera={{ position: [0, 0, 0] }}>
                 <ambientLight />
                 <pointLight intensity={10.0} position={lightPos} decay={0.1} />
-                <PageMesh text={props.text} order={1} color={"blue"} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
-                <PageMesh text={props.text} order={2} color={"yellow"} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
-                <PageMesh text={props.text} order={3} color={"purple"} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
-                <PageMesh text={props.text} order={4} color={"green"} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
+                <PageMesh text={pages[0].text} order={pages[0].order} color={pages[0].color} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
+                <PageMesh text={pages[1].text} order={pages[1].order} color={pages[1].color} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
+                <PageMesh text={pages[2].text} order={pages[2].order} color={pages[2].color} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
+                <PageMesh text={pages[3].text} order={pages[3].order} color={pages[3].color} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
             </Canvas>
         </div>
     </div>
