@@ -31,7 +31,7 @@ export function Model(props: myProps) {
   return (
     <group {...props} dispose={null}>
       <mesh geometry={nodes.Cube.geometry} /*material={materials.Material} material-color="red"*/ >
-        <meshPhysicalMaterial color={props.color} opacity={props.opacity} transparent />
+        <meshPhysicalMaterial color={props.color} opacity={props.opacity} transparent metalness={0.1}/>
       </mesh>
     </group>
   )
