@@ -1,7 +1,7 @@
 'use client'
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import {Billboard, Text, Html, useGLTF } from "@react-three/drei"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useResizeDetector } from 'react-resize-detector';
 import { ModelNode, color } from "three/examples/jsm/nodes/Nodes.js";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
@@ -16,10 +16,9 @@ function MyMaterial(props:any) {
 function PageMesh(props: any) {
 
     const ref = useRef<THREE.Mesh>(null!);
+    const modelRef = createRef<THREE.Group>();
 
-    const [rot, setRot] = useState<number>(0);
-
-    const [hovered, setHover] = useState(false);
+    const [thisOrder, setThisOrder] = useState<number>(props.order);
 
 
     const [whichWay, setWay] = useState(false);
@@ -27,21 +26,6 @@ function PageMesh(props: any) {
     const [deltaSum, setDeltaSum] = useState<number>(-2);
 
     const [opacity, setOpacity] = useState<number>(0);
-
-    //const [material, setMaterial] = useState<THREE.MeshPhysicalMaterial>(new THREE.MeshPhysicalMaterial({
-    //    color: props.color,
-    //    roughness: 0.5,
-    //    metalness: 0.5,
-    //    transmission: 1,
-    //    thickness: 0.5,
-    //    clearcoat: 1,
-    //    clearcoatRoughness: 0.5,
-    //    reflectivity: 0.5,
-    //    ior: 1.5,
-    //    envMapIntensity: 0.5,
-    //    opacity: 0.5,
-    //    side: THREE.DoubleSide,
-    //}));
 
     useFrame((state, delta) => {
 
@@ -58,35 +42,43 @@ function PageMesh(props: any) {
             ref.current.position.z = 0.9/(deltaSum+2) - 2.51//(delta)/(3+ref.current.position.z);
             setOpacity(-(ref.current.position.z)-1.125);
             ref.current
+            console.log(deltaSum)
+
         }
 
-        if(props.color == "green")
+        if(ref.current.position.z)
+
+        if(props.order != thisOrder && modelRef.current != null) {
+            if (modelRef.current.position.z > 1) {
+                modelRef.current.position.z = -10;
+            }
+            setOpacity(-(modelRef.current.position.z)+1);
+            modelRef.current.position.z += delta;
+            if(modelRef.current.position.z < -((props.order/2)-0.5)) {
+                setThisOrder(props.order);
+            }
+        }
+
+        
+        //console.log(state)
+
+        if(props.color == "purple")
         {
-            //console.log(props.color)
-            //console.log(ref.current.position.z)    
-
-            //console.log(ref.current)
+            console.log(modelRef)
+            console.log(-((props.order/2)-0.5))
+            console.log(modelRef.current.position.z)
         }
-        setRot(ref.current.rotation.x);
     })
     
     return(
         
-        <mesh  ref={ref} position={[0,0,0]} onPointerOver={(event) => setHover(true)} onPointerOut={(event) => setHover(false)} >
-            {/*<boxGeometry attach="geometry" args={[5, 2, 1]} />*/}
-            <Model scale={3} rotation={[0, -Math.PI/2, 0]} position={[0.1 + (props.order/5), -0.625+(props.order/4), -((props.order/2)-0.5)]} color={props.color} opacity={opacity}>
+        <mesh  ref={ref} position={[0,0,0]} >
+            <Model ref={modelRef} scale={3} rotation={[0, -Math.PI/2, 0]} position={[0.1 + (thisOrder/5), -0.625+(thisOrder/4), -((thisOrder/2)-0.5)]} color={props.color} opacity={opacity}>
             </Model>
-            {/*<primitive object={folderModel.scene} scale={3} rotation={[0, -Math.PI/2, 0]} position={[0.1, 0, 0]} children-0-castShadow children-0-material-color={props.color} children-0-material-transparent="true" children-0-material-opacity={opacity} />
-            <meshStandardMaterial color={hovered ? 'hotpink' : '#36FF14'} opacity={opacity}/>*/}
-            <Text scale={0.15} position={[0 + (props.order/5), -0.625+(props.order/4), -((props.order/2)-0.6)]} maxWidth={20} fillOpacity={opacity} outlineOpacity={opacity/1.4} color={"#FFDEFF"} outlineColor={"#152010"} outlineWidth={0.05}>{props.text}</Text>
-            {/*<Html scale={0.125} position={[0 + (props.order/5), -0.625+(props.order/4), -((props.order/2)-0.5)]} transform hidden={props.order != 1 ? true : false}>
-                    <div className="w-dvw text-3xl border-4 border-purple-500 bg-gradient-to-t from-purple-700 to-purple-100 hover:animate-spin" hidden={props.order != 1 ? true : false}>
-                    <p>{props.text}</p>
-                    <br/>
-                    <p className="text-center">Page {props.order}</p>
-                    </div>
-                </Html>
-        */}
+            <Text scale={0.15} position={[0 + (thisOrder/5), -0.625+(thisOrder/4), -((thisOrder/2)-0.6)]} maxWidth={20} fillOpacity={opacity} outlineOpacity={opacity/1.4} color={"#FFDEFF"} outlineColor={"#152010"} outlineWidth={0.05}>
+                {props.text}
+            </Text>
+            
         </mesh>
     )
 }
@@ -103,7 +95,7 @@ export function ThreeBackground(props: any) {
     //States
 
     const [lightPos, setLightPos] = useState<Vector3>(new Vector3(-4,2,0));
-    const [opacity, setOpacity] = useState<number>(1);
+    const [opacity, setOpacity] = useState<number>(0.9);
 
     const [canvasToolsHeight, setCanvasToolsHeight] = useState<number>(0);
     const canvasToolsRef = useRef<HTMLDivElement>(null!);
@@ -152,13 +144,13 @@ export function ThreeBackground(props: any) {
 
     return(
     <div className="h-screen">
-        <CanvasTools ref={canvasToolsRef} lightPos={lightPos} setLightPos={setLightPos} opacity={opacity} setOpacity={setOpacity} display={false} />
+        <CanvasTools ref={canvasToolsRef} lightPos={lightPos} setLightPos={setLightPos} opacity={opacity} setOpacity={setOpacity} display={true} />
         <div className={`${ toolsOffsetVariants[canvasToolsHeight as keyof typeof toolsOffsetVariants]}`}>
             <Canvas onClick={nextPage} camera={{ position: [0, 0, 0] }} color="#FFFFFF">
                 <ambientLight />
                 <mesh  position={[1, 0, 0]} >
       <sphereGeometry args={[-14.4, 10, undefined]} />
-      <meshStandardMaterial color={'black'} opacity={0.9} transparent /></mesh>
+      <meshStandardMaterial color={'black'} opacity={opacity} transparent /></mesh>
                 <pointLight intensity={20.0} position={lightPos} decay={0.2} />
                 <PageMesh text={pages[0].text} order={pages[0].order} color={pages[0].color} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
                 <PageMesh text={pages[1].text} order={pages[1].order} color={pages[1].color} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />

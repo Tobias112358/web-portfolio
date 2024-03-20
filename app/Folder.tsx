@@ -8,6 +8,8 @@ import * as THREE from 'three'
 import React, { useRef } from 'react'
 import { useGLTF } from '@react-three/drei'
 import { GLTF } from 'three-stdlib'
+import { forwardRef } from 'react';
+
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -24,17 +26,23 @@ type myProps = JSX.IntrinsicElements['group'] & {
   opacity: number
 }
 
+
+
+export type Ref = THREE.Group;
+
+
 type ContextType = Record<string, React.ForwardRefExoticComponent<JSX.IntrinsicElements['mesh']>>
 
-export function Model(props: myProps) {
+// eslint-disable-next-line react/display-name
+export const Model = forwardRef<Ref, myProps>((props, ref) => {
   const { nodes, materials } = useGLTF('/folder-transformed.glb') as GLTFResult
   return (
-    <group {...props} dispose={null}>
+    <group ref={ref} {...props} dispose={null}>
       <mesh geometry={nodes.Cube.geometry} /*material={materials.Material} material-color="red"*/ >
         <meshPhysicalMaterial color={props.color} opacity={props.opacity} transparent metalness={0.1}/>
       </mesh>
     </group>
   )
-}
+})
 
-useGLTF.preload('/folder-transformed.glb')
+useGLTF.preload('/folder-transformed.glb');
