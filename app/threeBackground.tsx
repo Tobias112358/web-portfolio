@@ -1,7 +1,7 @@
 'use client'
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import {Billboard, Text, Html, useGLTF } from "@react-three/drei"
-import { createRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ReactElement, createRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useResizeDetector } from 'react-resize-detector';
 import { ModelNode, color } from "three/examples/jsm/nodes/Nodes.js";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
@@ -29,14 +29,14 @@ function PageMesh(props: any) {
 
 
     const [startingZ, setStartingZ] = useState<number>(-(props.order/8));
-    const [settledZ, setSettledZ] = useState<number>(-((props.order/8)+2.4));
+    const [settledZ, setSettledZ] = useState<number>(-((props.order/8)+2));
 
     useEffect(() => {
-        if (props.order == 4 && settledZ != -((props.order/8)+2.4)) {
+        if (props.order == props.pageLength && settledZ != -((props.order/8)+2)) {
             setSettledZ(-1);
 
-        } else {
-            setSettledZ(-((props.order/8)+2.4));
+        } else if (settledZ != -1) {
+            setSettledZ(-((props.order/8)+2));
         }
         
         
@@ -44,24 +44,7 @@ function PageMesh(props: any) {
 
     useFrame((state, delta) => {
 
-        if(ref.current.rotation.x <= -Math.PI/24) {
-            setWay(false);
-        } else if (ref.current.rotation.x >= Math.PI/24) {
-            setWay(true);
-        }
-        //whichWay ? ref.current.rotation.x -= delta/8 : ref.current.rotation.x += delta/8;
-
-        //if(ref.current.position.z > -2.2)
-        //{
-            // setDeltaSum(deltaSum + delta);
-            // ref.current.position.z = 0.9/(deltaSum+props.order) - 2.51//(delta)/(3+ref.current.position.z);
-            // setOpacity(-(ref.current.position.z)-1.125);
-            // ref.current
-            // console.log(deltaSum)
-
-        //}
-
-
+        //Formula for moving the page's position
         if(ref.current.position.z != settledZ) {
             if(ref.current.position.z < settledZ) {
                 ref.current.position.z += delta*2
@@ -78,52 +61,24 @@ function PageMesh(props: any) {
             }
         } else if(ref.current.position.z == -1) {
             ref.current.position.z = -3.5;
-            setSettledZ(-((props.order/8)+2.4))
+            setSettledZ(-((props.order/8)+2))
         }
              
 
 
-        setOpacity(-(ref.current.position.z)-1.125);
-
-        console.log(ref.current.position.x)
-        console.log(ref.current.position.y)
-        console.log(ref.current.position.z)
-
-        //if(ref.current.position.z)
-        /*
-        if(props.order != thisOrder && modelRef.current != null) {
-            if (modelRef.current.position.z > 1) {
-                modelRef.current.position.z = -10;
-                setDeltaSum(0)
-            }
-            setOpacity(-(modelRef.current.position.z)+1);
-            modelRef.current.position.z += delta;
-            if(modelRef.current.position.z < -((props.order/2)-0.5)) {
-                setThisOrder(props.order);
-            }
-        }
-        */
-
-        
-        //console.log(state)
-
-        if(props.color == "purple")
-        {
-            //console.log(modelRef)
-            //console.log(-((props.order/2)-0.5))
-            //console.log(modelRef.current.position.z)
-        }
+        setOpacity(-(ref.current.position.z)-1);
     })
     
 
     return(
         
-        <mesh  ref={ref} position={[0,0,startingZ]} >
+        <mesh ref={ref} position={[0,-0.2,startingZ]} >
             <Model ref={modelRef} scale={3} rotation={[0, -Math.PI/2, 0]} position={[0,0,0]} color={props.color} opacity={opacity}>
             </Model>
-            <Text scale={0.15} position={[0,0,0.125]} maxWidth={20} fillOpacity={opacity} outlineOpacity={opacity/1.4} color={"#FFDEFF"} outlineColor={"#152010"} outlineWidth={0.05}>
+            <Text scale={0.15} position={[0,0,0.125]} maxWidth={20} fillOpacity={opacity} outlineOpacity={opacity/1.4} castShadow={true} color={"#FFDEFF"} outlineColor={"#152010"} outlineWidth={0.1} fontSize={1.5} font="/fonts/Inter-Bold.ttf">
                 {props.text}
             </Text>
+            <Text scale={0.075} position={[-2.0575,1.4,0.125]} color={'#FFFFFF'} fillOpacity={opacity} fontSize={0.75}  outlineColor={0xaaaaba} letterSpacing={0.25} outlineWidth={0.0333} outlineBlur={0.75} castShadow>{props.tagText} </Text>
             
         </mesh>
     )
@@ -133,6 +88,19 @@ type Page = {
     text: string;
     order: number;
     color: string;
+    tagText: string;
+}
+
+function MyRenderer(props: any) {
+    const { gl } = useThree();
+    useEffect(() => {
+        // gl === WebGLRenderer
+        // gl.info.calls
+        gl.setClearColor(0x101011, props.opacity);
+        console.log(gl.info);
+    });
+
+    return null;
 }
 
 
@@ -140,18 +108,30 @@ export function ThreeBackground(props: any) {
     
     //States
 
-    const [lightPos, setLightPos] = useState<Vector3>(new Vector3(-4,2,0));
-    const [opacity, setOpacity] = useState<number>(0.9);
+    const [lightPos, setLightPos] = useState<Vector3>(new Vector3(3,-1,-1));
+    const [opacity, setOpacity] = useState<number>(0.8);
 
     const [canvasToolsHeight, setCanvasToolsHeight] = useState<number>(0);
     const canvasToolsRef = useRef<HTMLDivElement>(null!);
 
     const [pages, setPages] = useState<Page[]>([
-        {text: props.text, order: 1, color: "blue"},
-        {text: "Another thing here!", order: 2, color: "gold"},
-        {text: "Page 3", order: 3, color: "purple"},
-        {text: "Page 4", order: 4, color: "red"},
+        {text: props.text, order: 1, color: "blue", tagText: "Home"},
+        {text: "Another thing here!", order: 2, color: "olive", tagText: "Software"},
+        {text: "Page 3", order: 3, color: "forestgreen", tagText: "Music"},
+        {text: "Page 4", order: 4, color: "darkmagenta", tagText: "Experience"},
+        {text: "Final Paage", order: 5, color: "HotPink", tagText: "Socials"},
     ]);
+    const [pageObjects, setPageObjects] = useState<ReactElement<any, any>[]>(null!);
+
+    useEffect(() => {
+        var array: ReactElement<any, any>[] = [];
+        for(let i = 0; i < pages.length; i++) {
+            
+            array.push(
+                <PageMesh text={pages[i].text} order={pages[i].order} color={pages[i].color} tagText={pages[i].tagText} opacity={opacity} canvasToolsHeight={canvasToolsHeight} pageLength={pages.length} />)
+        }
+        setPageObjects(array);
+    }, [pages]);
 
     const toolsOffsetVariants = {
         0: "h-screen",
@@ -178,8 +158,8 @@ export function ThreeBackground(props: any) {
         var newPages: Page[] = [];
         pages.forEach(page => {
             var newPage = page;
-            newPage.order = ((page.order-1) % 4)
-            if(newPage.order == 0) newPage.order = 4;
+            newPage.order = ((page.order-1) % pages.length)
+            if(newPage.order == 0) newPage.order = pages.length;
             newPages.push(newPage)
             console.log(newPage);
         });
@@ -193,15 +173,14 @@ export function ThreeBackground(props: any) {
         <CanvasTools ref={canvasToolsRef} lightPos={lightPos} setLightPos={setLightPos} opacity={opacity} setOpacity={setOpacity} display={false} />
         <div className={`${ toolsOffsetVariants[canvasToolsHeight as keyof typeof toolsOffsetVariants]}`}>
             <Canvas onClick={nextPage} camera={{ position: [0, 0, 0] }} color="#FFFFFF">
+                <MyRenderer opacity={opacity} />
                 <ambientLight />
-                {/*<mesh  position={[1, 0, 0]} >
-      <sphereGeometry args={[-14.4, 10, undefined]} />
-    <meshStandardMaterial color={'black'} opacity={opacity} transparent /></mesh>*/}
+                {/*<mesh position={[1, 0, 0]} > 
+                    <sphereGeometry args={[-14.4, 10, undefined]} /> 
+                    <meshStandardMaterial color={'black'} opacity={opacity} transparent />
+                </mesh>*/}
                 <pointLight intensity={20.0} position={lightPos} decay={0.2} />
-                <PageMesh text={pages[0].text} order={pages[0].order} color={pages[0].color} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
-                <PageMesh text={pages[1].text} order={pages[1].order} color={pages[1].color} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
-                <PageMesh text={pages[2].text} order={pages[2].order} color={pages[2].color} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
-                <PageMesh text={pages[3].text} order={pages[3].order} color={pages[3].color} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
+                {pageObjects}
             </Canvas>
         </div>
     </div>

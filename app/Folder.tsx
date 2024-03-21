@@ -38,7 +38,7 @@ export const Model = forwardRef<Ref, myProps>((props, ref) => {
   const { nodes, materials } = useGLTF('/folder-transformed.glb') as GLTFResult
   return (
     <group ref={ref} {...props} dispose={null}>
-      <mesh geometry={nodes.Cube.geometry} /*material={materials.Material} material-color="red"*/ >
+      <mesh receiveShadow={true} geometry={nodes.Cube.geometry} /*material={materials.Material} material-color="red"*/ >
         <meshPhysicalMaterial color={props.color} opacity={props.opacity} transparent metalness={0.1}/>
       </mesh>
     </group>
