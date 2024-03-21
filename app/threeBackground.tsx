@@ -27,6 +27,21 @@ function PageMesh(props: any) {
 
     const [opacity, setOpacity] = useState<number>(0);
 
+
+    const [startingZ, setStartingZ] = useState<number>(-(props.order/8));
+    const [settledZ, setSettledZ] = useState<number>(-((props.order/8)+2.4));
+
+    useEffect(() => {
+        if (props.order == 4 && settledZ != -((props.order/8)+2.4)) {
+            setSettledZ(-1);
+
+        } else {
+            setSettledZ(-((props.order/8)+2.4));
+        }
+        
+        
+    }, [props.order]);
+
     useFrame((state, delta) => {
 
         if(ref.current.rotation.x <= -Math.PI/24) {
@@ -36,21 +51,50 @@ function PageMesh(props: any) {
         }
         //whichWay ? ref.current.rotation.x -= delta/8 : ref.current.rotation.x += delta/8;
 
-        if(ref.current.position.z > -2.2)
-        {
-            setDeltaSum(deltaSum + delta);
-            ref.current.position.z = 0.9/(deltaSum+2) - 2.51//(delta)/(3+ref.current.position.z);
-            setOpacity(-(ref.current.position.z)-1.125);
-            ref.current
-            console.log(deltaSum)
+        //if(ref.current.position.z > -2.2)
+        //{
+            // setDeltaSum(deltaSum + delta);
+            // ref.current.position.z = 0.9/(deltaSum+props.order) - 2.51//(delta)/(3+ref.current.position.z);
+            // setOpacity(-(ref.current.position.z)-1.125);
+            // ref.current
+            // console.log(deltaSum)
 
+        //}
+
+
+        if(ref.current.position.z != settledZ) {
+            if(ref.current.position.z < settledZ) {
+                ref.current.position.z += delta*2
+                if(ref.current.position.z >= settledZ) {
+                    ref.current.position.z = settledZ
+                    setStartingZ(settledZ);
+                }   
+            } else if (ref.current.position.z > settledZ) {
+                ref.current.position.z -= delta*2
+                if(ref.current.position.z <= settledZ) {
+                    ref.current.position.z = settledZ
+                    setStartingZ(settledZ);
+                }
+            }
+        } else if(ref.current.position.z == -1) {
+            ref.current.position.z = -3.5;
+            setSettledZ(-((props.order/8)+2.4))
         }
+             
 
-        if(ref.current.position.z)
 
+        setOpacity(-(ref.current.position.z)-1.125);
+
+        console.log(ref.current.position.x)
+        console.log(ref.current.position.y)
+        console.log(ref.current.position.z)
+
+        //if(ref.current.position.z)
+        /*
         if(props.order != thisOrder && modelRef.current != null) {
             if (modelRef.current.position.z > 1) {
                 modelRef.current.position.z = -10;
+                setDeltaSum(0)
             }
             setOpacity(-(modelRef.current.position.z)+1);
             modelRef.current.position.z += delta;
@@ -58,24 +102,26 @@ function PageMesh(props: any) {
                 setThisOrder(props.order);
             }
         }
+        */
 
         
         //console.log(state)
 
         if(props.color == "purple")
         {
-            console.log(modelRef)
-            console.log(-((props.order/2)-0.5))
-            console.log(modelRef.current.position.z)
+            //console.log(modelRef)
+            //console.log(-((props.order/2)-0.5))
+            //console.log(modelRef.current.position.z)
         }
     })
     
+
     return(
         
-        <mesh  ref={ref} position={[0,0,0]} >
-            <Model ref={modelRef} scale={3} rotation={[0, -Math.PI/2, 0]} position={[0.1 + (thisOrder/5), -0.625+(thisOrder/4), -((thisOrder/2)-0.5)]} color={props.color} opacity={opacity}>
+        <mesh  ref={ref} position={[0,0,startingZ]} >
+            <Model ref={modelRef} scale={3} rotation={[0, -Math.PI/2, 0]} position={[0,0,0]} color={props.color} opacity={opacity}>
             </Model>
-            <Text scale={0.15} position={[0 + (thisOrder/5), -0.625+(thisOrder/4), -((thisOrder/2)-0.6)]} maxWidth={20} fillOpacity={opacity} outlineOpacity={opacity/1.4} color={"#FFDEFF"} outlineColor={"#152010"} outlineWidth={0.05}>
+            <Text scale={0.15} position={[0,0,0.125]} maxWidth={20} fillOpacity={opacity} outlineOpacity={opacity/1.4} color={"#FFDEFF"} outlineColor={"#152010"} outlineWidth={0.05}>
                 {props.text}
             </Text>
             
@@ -144,13 +190,13 @@ export function ThreeBackground(props: any) {
 
     return(
     <div className="h-screen">
-        <CanvasTools ref={canvasToolsRef} lightPos={lightPos} setLightPos={setLightPos} opacity={opacity} setOpacity={setOpacity} display={true} />
+        <CanvasTools ref={canvasToolsRef} lightPos={lightPos} setLightPos={setLightPos} opacity={opacity} setOpacity={setOpacity} display={false} />
         <div className={`${ toolsOffsetVariants[canvasToolsHeight as keyof typeof toolsOffsetVariants]}`}>
             <Canvas onClick={nextPage} camera={{ position: [0, 0, 0] }} color="#FFFFFF">
                 <ambientLight />
-                <mesh  position={[1, 0, 0]} >
+                {/*<mesh  position={[1, 0, 0]} >
       <sphereGeometry args={[-14.4, 10, undefined]} />
-      <meshStandardMaterial color={'black'} opacity={opacity} transparent /></mesh>
+    <meshStandardMaterial color={'black'} opacity={opacity} transparent /></mesh>*/}
                 <pointLight intensity={20.0} position={lightPos} decay={0.2} />
                 <PageMesh text={pages[0].text} order={pages[0].order} color={pages[0].color} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
                 <PageMesh text={pages[1].text} order={pages[1].order} color={pages[1].color} opacity={opacity} canvasToolsHeight={canvasToolsHeight} />
