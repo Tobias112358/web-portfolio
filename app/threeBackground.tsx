@@ -8,6 +8,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import THREE, { MeshBasicMaterial, MeshPhysicalMaterial, Vector3 } from "three";
 import CanvasTools  from "./CanvasTools";
 import {Model} from './Folder';
+import getSoftware from "./getSoftware";
 
 function MyMaterial(props:any) {
     return 
@@ -115,11 +116,6 @@ export function ThreeBackground(props: any) {
     const canvasToolsRef = useRef<HTMLDivElement>(null!);
 
     const [pages, setPages] = useState<Page[]>([
-        {text: props.text, order: 1, color: "blue", tagText: "Home"},
-        {text: "Another thing here!", order: 2, color: "olive", tagText: "Software"},
-        {text: "Page 3", order: 3, color: "forestgreen", tagText: "Music"},
-        {text: "Page 4", order: 4, color: "darkmagenta", tagText: "Experience"},
-        {text: "Final Paage", order: 5, color: "HotPink", tagText: "Socials"},
     ]);
     const [pageObjects, setPageObjects] = useState<ReactElement<any, any>[]>(null!);
 
@@ -133,6 +129,28 @@ export function ThreeBackground(props: any) {
         setPageObjects(array);
     }, [pages]);
 
+    useEffect(() => {
+        async function gSoftware() {
+            var software = await getSoftware();
+            console.log(software);
+
+            var pages:Page[] = [
+                {text: props.text, order: 1, color: "blue", tagText: "Home"},
+                {text: "Another thing here!", order: 2, color: "olive", tagText: "Software"},
+                {text: "Page 3", order: 3, color: "forestgreen", tagText: "Music"},
+                {text: "Page 4", order: 4, color: "darkmagenta", tagText: "Experience"},
+                {text: "Final Paage", order: 5, color: "HotPink", tagText: "Socials"},
+            ]
+
+            for(var i = 0; i<software.length; i++) {
+
+                pages.push({text: software[i].description, order: i+6, color: "red", tagText: software[i].title})
+            };
+            setPages(pages);
+        }
+        gSoftware();
+        
+    }, []);
     const toolsOffsetVariants = {
         0: "h-screen",
         107: "h-[calc(100vh_-_107px)]",

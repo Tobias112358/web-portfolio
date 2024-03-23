@@ -17,9 +17,10 @@ async function setup() {
 
   // Insert dummy data
   await db.run(
-    'INSERT INTO software (title, description) VALUES (?, ?)',
-    'Application 1', 
-    'My first app!'
+    'INSERT INTO software (title, github_url, description) VALUES (?, ?, ?)',
+    'Simple Synth',
+    'https://github.com/Tobias112358/simple-synth', 
+    'A basic VST synthesizer with an LFO. Choose between 4 waveforms on both oscillators.'
   )
   
   // Close connection
