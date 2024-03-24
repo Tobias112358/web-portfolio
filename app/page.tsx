@@ -13,11 +13,6 @@ export default async function Home() {
       <div className="w-screen h-dvh">
         <ThreeBackground text={intro_text} />
       </div>
-      {/*<div className="flex flex-wrap justify-center items-center m-3 p-1 bg-slate-900 text-center w-full rounded-lg">
-        <MainButton link={"https://github.com/Tobias112358"} name={"Github"} />
-        <MainButton link={"https://github.com/Tobias112358"} name={"LinkedIn"} />
-        <MainButton link={"https://github.com/Tobias112358"} name={"X"} />
-  </div>*/}
     </main>
   )
 }

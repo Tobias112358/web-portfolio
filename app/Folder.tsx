@@ -36,10 +36,15 @@ type ContextType = Record<string, React.ForwardRefExoticComponent<JSX.IntrinsicE
 // eslint-disable-next-line react/display-name
 export const Model = forwardRef<Ref, myProps>((props, ref) => {
   const { nodes, materials } = useGLTF('/folder-transformed.glb') as GLTFResult
+
+  const texture: THREE.Texture = new THREE.TextureLoader().load('Rolling Hills Height Map.png'); 
+  
+  
+
   return (
     <group ref={ref} {...props} dispose={null}>
-      <mesh receiveShadow={true} geometry={nodes.Cube.geometry} /*material={materials.Material} material-color="red"*/ >
-        <meshPhysicalMaterial color={props.color} opacity={props.opacity} transparent metalness={0.1}/>
+      <mesh receiveShadow={true} geometry={nodes.Cube.geometry} >
+        <meshPhysicalMaterial color={props.color} opacity={props.opacity} transparent iridescenceMap={texture} metalness={0.5}/>
       </mesh>
     </group>
   )

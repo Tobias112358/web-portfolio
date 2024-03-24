@@ -1,7 +1,7 @@
 'use client'
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
-import {Billboard, Text, Html, useGLTF } from "@react-three/drei"
-import { ReactElement, createRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {Billboard, Text, Html, useGLTF, PerspectiveCamera } from "@react-three/drei"
+import { MouseEvent, MouseEventHandler, ReactElement, createRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useResizeDetector } from 'react-resize-detector';
 import { ModelNode, color } from "three/examples/jsm/nodes/Nodes.js";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
@@ -10,8 +10,86 @@ import CanvasTools  from "./CanvasTools";
 import {Model} from './Folder';
 import getSoftware from "./getSoftware";
 
-function MyMaterial(props:any) {
-    return 
+function PageScene(props:any) {
+    const [opacity, setOpacity] = useState<number>(0.8);
+    const [cameraPos, setCameraPos] = useState<Vector3>(new Vector3(0,0,2));
+    const [lightPos, setLightPos] = useState<Vector3>(new Vector3(3,-1.7,-1));
+    const [pages, setPages] = useState<Page[]>([
+    ]);
+    const [pageObjects, setPageObjects] = useState<ReactElement<any, any>[]>(null!);
+
+
+
+    const cameraRef = useRef<THREE.PerspectiveCamera>(null!);
+    const pagesRef = useRef<THREE.Group>(null!);
+
+    useEffect(() => {
+        var array: ReactElement<any, any>[] = [];
+        for(let i = 0; i < pages.length; i++) {
+            
+            array.push(
+                <PageMesh text={pages[i].text} order={pages[i].order} color={pages[i].color} tagText={pages[i].tagText} opacity={opacity} pageLength={pages.length} />)
+        }
+        setPageObjects(array);
+    }, [opacity, pages]);
+
+    useEffect(() => {
+        async function gSoftware() {
+            var software = await getSoftware();
+            console.log(software);
+
+            var pages:Page[] = [
+                {text: props.text, order: 1, color: "blue", tagText: "Home"},
+                {text: "Another thing here!", order: 2, color: "olive", tagText: "Software"},
+                {text: "Page 3", order: 3, color: "forestgreen", tagText: "Music"},
+                {text: "Page 4", order: 4, color: "darkmagenta", tagText: "Experience"},
+                {text: "Final Paage", order: 5, color: "HotPink", tagText: "Socials"},
+            ]
+
+            for(var i = 0; i<software.length; i++) {
+
+                pages.push({text: software[i].description, order: i+6, color: "red", tagText: software[i].title})
+            };
+            setPages(pages);
+        }
+        gSoftware();
+        
+    });
+    
+
+    const nextPage = () => {
+        var newPages: Page[] = [];
+        pages.forEach(page => {
+            var newPage = page;
+            newPage.order = ((page.order-1) % pages.length)
+            if(newPage.order == 0) newPage.order = pages.length;
+            newPages.push(newPage)
+            //console.log(newPage);
+        });
+        setPages(newPages);
+    }
+
+    useFrame(({ mouse, viewport }) => {
+        const x = (mouse.x * viewport.width) / 3.5
+        const y = (mouse.y * viewport.height) / 3.5
+        pagesRef.current.lookAt(x, y, 1)
+        
+      })
+    return (
+        <group onClick={nextPage}>
+            <PerspectiveCamera ref={cameraRef} makeDefault position={cameraPos} />
+            <MyRenderer opacity={opacity} />
+            <ambientLight />
+            {/*<mesh position={[1, 0, 0]} > 
+                <sphereGeometry args={[-14.4, 10, undefined]} /> 
+                <meshStandardMaterial color={'black'} opacity={opacity} transparent />
+            </mesh>*/}
+            <pointLight intensity={20.0} position={lightPos} decay={0.2} />
+            <group ref={pagesRef}>
+                {pageObjects}
+            </group>    
+        </group>
+    )
 }
 
 function PageMesh(props: any) {
@@ -41,7 +119,7 @@ function PageMesh(props: any) {
         }
         
         
-    }, [props.order]);
+    }, [props.order, props.pageLength, settledZ]);
 
     useFrame((state, delta) => {
 
@@ -65,7 +143,6 @@ function PageMesh(props: any) {
             setSettledZ(-((props.order/8)+2))
         }
              
-
 
         setOpacity(-(ref.current.position.z)-1);
     })
@@ -98,7 +175,7 @@ function MyRenderer(props: any) {
         // gl === WebGLRenderer
         // gl.info.calls
         gl.setClearColor(0x101011, props.opacity);
-        console.log(gl.info);
+        //console.log(gl.info);
     });
 
     return null;
@@ -107,50 +184,15 @@ function MyRenderer(props: any) {
 
 export function ThreeBackground(props: any) {
     
+
     //States
 
-    const [lightPos, setLightPos] = useState<Vector3>(new Vector3(3,-1,-1));
     const [opacity, setOpacity] = useState<number>(0.8);
 
     const [canvasToolsHeight, setCanvasToolsHeight] = useState<number>(0);
     const canvasToolsRef = useRef<HTMLDivElement>(null!);
 
-    const [pages, setPages] = useState<Page[]>([
-    ]);
-    const [pageObjects, setPageObjects] = useState<ReactElement<any, any>[]>(null!);
-
-    useEffect(() => {
-        var array: ReactElement<any, any>[] = [];
-        for(let i = 0; i < pages.length; i++) {
-            
-            array.push(
-                <PageMesh text={pages[i].text} order={pages[i].order} color={pages[i].color} tagText={pages[i].tagText} opacity={opacity} canvasToolsHeight={canvasToolsHeight} pageLength={pages.length} />)
-        }
-        setPageObjects(array);
-    }, [pages]);
-
-    useEffect(() => {
-        async function gSoftware() {
-            var software = await getSoftware();
-            console.log(software);
-
-            var pages:Page[] = [
-                {text: props.text, order: 1, color: "blue", tagText: "Home"},
-                {text: "Another thing here!", order: 2, color: "olive", tagText: "Software"},
-                {text: "Page 3", order: 3, color: "forestgreen", tagText: "Music"},
-                {text: "Page 4", order: 4, color: "darkmagenta", tagText: "Experience"},
-                {text: "Final Paage", order: 5, color: "HotPink", tagText: "Socials"},
-            ]
-
-            for(var i = 0; i<software.length; i++) {
-
-                pages.push({text: software[i].description, order: i+6, color: "red", tagText: software[i].title})
-            };
-            setPages(pages);
-        }
-        gSoftware();
-        
-    }, []);
+    
     const toolsOffsetVariants = {
         0: "h-screen",
         107: "h-[calc(100vh_-_107px)]",
@@ -161,7 +203,22 @@ export function ThreeBackground(props: any) {
         setCanvasToolsHeight(Math.floor(canvasToolsRef.current.clientHeight));
     }, []);
 
+    
+    function handleMouseMove(event: MouseEvent) {
 
+        /*
+        console.log(window.outerHeight);
+        
+        var newCameraPos = new Vector3((event.clientX-(window.outerWidth/2))/100, (event.clientY-(window.outerHeight/2))/100, 2);
+
+        console.log(newCameraPos);
+        setCameraPos(newCameraPos);
+
+        console.log(cameraRef);
+        var lookAt = new THREE.Vector3(0,-0.2,-((1/8)+2));
+        cameraRef.current.lookAt(lookAt);*/
+
+    }
 
 
     const {width, height} = useResizeDetector({    
@@ -172,33 +229,16 @@ export function ThreeBackground(props: any) {
         onResize: onToolbarResize
     });
 
-    const nextPage = () => {
-        var newPages: Page[] = [];
-        pages.forEach(page => {
-            var newPage = page;
-            newPage.order = ((page.order-1) % pages.length)
-            if(newPage.order == 0) newPage.order = pages.length;
-            newPages.push(newPage)
-            console.log(newPage);
-        });
-        setPages(newPages);
-    }
+    
 
 
 
     return(
-    <div className="h-screen">
-        <CanvasTools ref={canvasToolsRef} lightPos={lightPos} setLightPos={setLightPos} opacity={opacity} setOpacity={setOpacity} display={false} />
+    <div className="h-screen" onMouseMove={handleMouseMove}>
+        <CanvasTools ref={canvasToolsRef} lightPos={new Vector3(0,0,0)} setLightPos={() => {console.log("Null")}} opacity={opacity} setOpacity={setOpacity} display={false} />
         <div className={`${ toolsOffsetVariants[canvasToolsHeight as keyof typeof toolsOffsetVariants]}`}>
-            <Canvas onClick={nextPage} camera={{ position: [0, 0, 0] }} color="#FFFFFF">
-                <MyRenderer opacity={opacity} />
-                <ambientLight />
-                {/*<mesh position={[1, 0, 0]} > 
-                    <sphereGeometry args={[-14.4, 10, undefined]} /> 
-                    <meshStandardMaterial color={'black'} opacity={opacity} transparent />
-                </mesh>*/}
-                <pointLight intensity={20.0} position={lightPos} decay={0.2} />
-                {pageObjects}
+            <Canvas color="#FFFFFF">
+                <PageScene />
             </Canvas>
         </div>
     </div>
