@@ -1,21 +1,24 @@
 'use client'
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import {Billboard, Text, Html, useGLTF, PerspectiveCamera } from "@react-three/drei"
-import { MouseEvent, MouseEventHandler, ReactElement, createRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { MouseEvent, MouseEventHandler, ReactElement, createRef, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useResizeDetector } from 'react-resize-detector';
 import { ModelNode, color } from "three/examples/jsm/nodes/Nodes.js";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import THREE, { MeshBasicMaterial, MeshPhysicalMaterial, Vector3 } from "three";
+import THREE, { MeshBasicMaterial, MeshPhongMaterial, MeshPhysicalMaterial, Vector3 } from "three";
 import CanvasTools  from "./CanvasTools";
 import {Model} from './Folder';
 import getSoftware from "./getSoftware";
 
-function PageScene(props:any) {
+
+export type Ref = THREE.Group;
+
+// eslint-disable-next-line react/display-name
+const PageScene = forwardRef<Ref, any>((props, ref) => {
     const [opacity, setOpacity] = useState<number>(0.8);
     const [cameraPos, setCameraPos] = useState<Vector3>(new Vector3(0,0,2));
     const [lightPos, setLightPos] = useState<Vector3>(new Vector3(3,-1.7,-1));
-    const [pages, setPages] = useState<Page[]>([
-    ]);
+    
     const [pageObjects, setPageObjects] = useState<ReactElement<any, any>[]>(null!);
 
 
@@ -25,58 +28,26 @@ function PageScene(props:any) {
 
     useEffect(() => {
         var array: ReactElement<any, any>[] = [];
-        for(let i = 0; i < pages.length; i++) {
+        for(let i = 0; i < props.pages.length; i++) {
             
             array.push(
-                <PageMesh text={pages[i].text} order={pages[i].order} color={pages[i].color} tagText={pages[i].tagText} opacity={opacity} pageLength={pages.length} />)
+                <PageMesh text={props.pages[i].text} order={props.pages[i].order} color={props.pages[i].color} tagText={props.pages[i].tagText} opacity={opacity} pageLength={props.pages.length} />)
         }
         setPageObjects(array);
-    }, [opacity, pages]);
+    }, [opacity, props.pages]);
 
-    useEffect(() => {
-        async function gSoftware() {
-            var software = await getSoftware();
-            console.log(software);
-
-            var pages:Page[] = [
-                {text: props.text, order: 1, color: "blue", tagText: "Home"},
-                {text: "Another thing here!", order: 2, color: "olive", tagText: "Software"},
-                {text: "Page 3", order: 3, color: "forestgreen", tagText: "Music"},
-                {text: "Page 4", order: 4, color: "darkmagenta", tagText: "Experience"},
-                {text: "Final Paage", order: 5, color: "HotPink", tagText: "Socials"},
-            ]
-
-            for(var i = 0; i<software.length; i++) {
-
-                pages.push({text: software[i].description, order: i+6, color: "red", tagText: software[i].title})
-            };
-            setPages(pages);
-        }
-        gSoftware();
-        
-    });
     
 
-    const nextPage = () => {
-        var newPages: Page[] = [];
-        pages.forEach(page => {
-            var newPage = page;
-            newPage.order = ((page.order-1) % pages.length)
-            if(newPage.order == 0) newPage.order = pages.length;
-            newPages.push(newPage)
-            //console.log(newPage);
-        });
-        setPages(newPages);
-    }
+    
 
     useFrame(({ mouse, viewport }) => {
-        const x = (mouse.x * viewport.width) / 3.5
-        const y = (mouse.y * viewport.height) / 3.5
+        const x = (mouse.x * viewport.width) / 15
+        const y = (mouse.y * viewport.height) / 15
         pagesRef.current.lookAt(x, y, 1)
         
       })
     return (
-        <group onClick={nextPage}>
+        <group ref={ref}>
             <PerspectiveCamera ref={cameraRef} makeDefault position={cameraPos} />
             <MyRenderer opacity={opacity} />
             <ambientLight />
@@ -90,7 +61,7 @@ function PageScene(props:any) {
             </group>    
         </group>
     )
-}
+})
 
 function PageMesh(props: any) {
 
@@ -157,6 +128,10 @@ function PageMesh(props: any) {
                 {props.text}
             </Text>
             <Text scale={0.075} position={[-2.0575,1.4,0.125]} color={'#FFFFFF'} fillOpacity={opacity} fontSize={0.75}  outlineColor={0xaaaaba} letterSpacing={0.25} outlineWidth={0.0333} outlineBlur={0.75} castShadow>{props.tagText} </Text>
+            <mesh scale={[2,1,3]}>
+                <boxGeometry />
+                <meshBasicMaterial color={"green"} />
+            </mesh>
             
         </mesh>
     )
@@ -186,11 +161,14 @@ export function ThreeBackground(props: any) {
     
 
     //States
+    const [pages, setPages] = useState<Page[]>([
+    ]);
 
     const [opacity, setOpacity] = useState<number>(0.8);
 
     const [canvasToolsHeight, setCanvasToolsHeight] = useState<number>(0);
     const canvasToolsRef = useRef<HTMLDivElement>(null!);
+    const pageSceneRef = useRef<THREE.Group>(null!);
 
     
     const toolsOffsetVariants = {
@@ -229,7 +207,41 @@ export function ThreeBackground(props: any) {
         onResize: onToolbarResize
     });
 
+    useEffect(() => {
+        async function gSoftware() {
+            var software = await getSoftware();
+            console.log(software);
+
+            var pages:Page[] = [
+                {text: props.text, order: 1, color: "blue", tagText: "Home"},
+                {text: "Another thing here!", order: 2, color: "olive", tagText: "Software"},
+                {text: "Page 3", order: 3, color: "forestgreen", tagText: "Music"},
+                {text: "Page 4", order: 4, color: "darkmagenta", tagText: "Experience"},
+                {text: "Final Paage", order: 5, color: "HotPink", tagText: "Socials"},
+            ]
+
+            for(var i = 0; i<software.length; i++) {
+
+                pages.push({text: software[i].description, order: i+6, color: "red", tagText: software[i].title})
+            };
+            setPages(pages);
+        }
+        gSoftware();
+        
+    }, []);
     
+
+    const nextPage = () => {
+        var newPages: Page[] = [];
+        pages.forEach(page => {
+            var newPage = page;
+            newPage.order = ((page.order-1) % pages.length)
+            if(newPage.order == 0) newPage.order = pages.length;
+            newPages.push(newPage)
+            //console.log(newPage);
+        });
+        setPages(newPages);
+    }
 
 
 
@@ -237,8 +249,8 @@ export function ThreeBackground(props: any) {
     <div className="h-screen" onMouseMove={handleMouseMove}>
         <CanvasTools ref={canvasToolsRef} lightPos={new Vector3(0,0,0)} setLightPos={() => {console.log("Null")}} opacity={opacity} setOpacity={setOpacity} display={false} />
         <div className={`${ toolsOffsetVariants[canvasToolsHeight as keyof typeof toolsOffsetVariants]}`}>
-            <Canvas color="#FFFFFF">
-                <PageScene />
+            <Canvas color="#FFFFFF" onClick={nextPage} >
+                <PageScene ref={pageSceneRef} pages={pages} text={props.text} />
             </Canvas>
         </div>
     </div>
