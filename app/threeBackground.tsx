@@ -128,7 +128,7 @@ function PageMesh(props: any) {
                 {props.text}
             </Text>
             <Text scale={0.075} position={[-2.0575,1.4,0.125]} color={'#FFFFFF'} fillOpacity={opacity} fontSize={0.75}  outlineColor={0xaaaaba} letterSpacing={0.25} outlineWidth={0.0333} outlineBlur={0.75} castShadow>{props.tagText} </Text>
-            {props.order == 1 &&
+            {props.order == 1 && props.github_url != undefined &&
                 <mesh scale={[1,0.5,0.5]} position={[1.2,-0.5,0.25]} frustumCulled onClick={() => {window.open(props.github_url)}}>
                     <boxGeometry />
                     <meshBasicMaterial color={props.color} transparent opacity={opacity}/>
