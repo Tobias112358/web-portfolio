@@ -31,7 +31,7 @@ const PageScene = forwardRef<Ref, any>((props, ref) => {
         for(let i = 0; i < props.pages.length; i++) {
             
             array.push(
-                <PageMesh text={props.pages[i].text} order={props.pages[i].order} color={props.pages[i].color} tagText={props.pages[i].tagText} opacity={opacity} pageLength={props.pages.length} />)
+                <PageMesh text={props.pages[i].text} order={props.pages[i].order} color={props.pages[i].color} tagText={props.pages[i].tagText} opacity={opacity} pageLength={props.pages.length} github_url={props.pages[i].github_url} />)
         }
         setPageObjects(array);
     }, [opacity, props.pages]);
@@ -117,8 +117,8 @@ function PageMesh(props: any) {
 
         setOpacity(-(ref.current.position.z)-1);
     })
-    
 
+    
     return(
         
         <mesh ref={ref} position={[0,-0.2,startingZ]} >
@@ -128,10 +128,16 @@ function PageMesh(props: any) {
                 {props.text}
             </Text>
             <Text scale={0.075} position={[-2.0575,1.4,0.125]} color={'#FFFFFF'} fillOpacity={opacity} fontSize={0.75}  outlineColor={0xaaaaba} letterSpacing={0.25} outlineWidth={0.0333} outlineBlur={0.75} castShadow>{props.tagText} </Text>
-            <mesh scale={[2,1,3]}>
-                <boxGeometry />
-                <meshBasicMaterial color={"green"} />
-            </mesh>
+            {props.order == 1 &&
+                <mesh scale={[1,0.5,0.5]} position={[1.2,-0.5,0.25]} frustumCulled onClick={() => {window.open(props.github_url)}}>
+                    <boxGeometry />
+                    <meshBasicMaterial color={props.color} transparent opacity={opacity}/>
+                    <Text scale={0.15} position={[0,0,0.825]} maxWidth={20} fillOpacity={opacity} outlineOpacity={opacity/1.4} castShadow={true} color={"#FFDEFF"} fontSize={1} font="/fonts/Inter-Bold.ttf">
+                        Github Here
+                    </Text>
+                </mesh> 
+
+            }
             
         </mesh>
     )
@@ -142,6 +148,7 @@ type Page = {
     order: number;
     color: string;
     tagText: string;
+    github_url?: string;
 }
 
 function MyRenderer(props: any) {
@@ -222,7 +229,7 @@ export function ThreeBackground(props: any) {
 
             for(var i = 0; i<software.length; i++) {
 
-                pages.push({text: software[i].description, order: i+6, color: "red", tagText: software[i].title})
+                pages.push({text: software[i].description, order: i+6, color: "red", tagText: software[i].title, github_url: software[i].github_url})
             };
             setPages(pages);
         }
