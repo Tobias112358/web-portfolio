@@ -9,7 +9,7 @@ export default async function Home() {
 
   return (
     <main className="flex font-bold font-mono justify-normal flex-wrap gap-4">
-      <Navbar />
+      {/*<Navbar />*/}
       <div className="w-screen h-dvh">
         <ThreeBackground text={intro_text} />
       </div>

@@ -5,7 +5,7 @@ import { MouseEvent, MouseEventHandler, ReactElement, createRef, forwardRef, use
 import { useResizeDetector } from 'react-resize-detector';
 import { ModelNode, color } from "three/examples/jsm/nodes/Nodes.js";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import THREE, { MeshBasicMaterial, MeshPhongMaterial, MeshPhysicalMaterial, Vector3 } from "three";
+import THREE, { Color, ConeGeometry, MeshBasicMaterial, MeshPhongMaterial, MeshPhysicalMaterial, Vector3 } from "three";
 import CanvasTools  from "./CanvasTools";
 import {Model} from './Folder';
 import getSoftware from "./getSoftware";
@@ -129,10 +129,11 @@ function PageMesh(props: any) {
             </Text>
             <Text scale={0.075} position={[-2.0575,1.4,0.125]} color={'#FFFFFF'} fillOpacity={opacity} fontSize={0.75}  outlineColor={0xaaaaba} letterSpacing={0.25} outlineWidth={0.0333} outlineBlur={0.75} castShadow>{props.tagText} </Text>
             {props.order == 1 && props.github_url != undefined &&
-                <mesh scale={[1,0.5,0.5]} position={[1.2,-0.5,0.25]} frustumCulled onClick={() => {window.open(props.github_url)}}>
-                    <boxGeometry />
-                    <meshBasicMaterial color={props.color} transparent opacity={opacity}/>
-                    <Text scale={0.15} position={[0,0,0.825]} maxWidth={20} fillOpacity={opacity} outlineOpacity={opacity/1.4} castShadow={true} color={"#FFDEFF"} fontSize={1} font="/fonts/Inter-Bold.ttf">
+                <mesh scale={[0.4,0.1,0.4]} rotation={[-Math.PI/2, 0, 0]} position={[1.2,-0.5,0.5]} frustumCulled onClick={() => {window.open(props.github_url)}}>
+                    
+                    <coneGeometry />
+                    <meshBasicMaterial color={props.color} reflectivity={0.0} transparent opacity={opacity}/>
+                    <Text scale={[0.5,0.5,0.5]} rotation={[Math.PI/2, 0, 0]} position={[0,-1,0]} maxWidth={20} fillOpacity={opacity} outlineOpacity={opacity/1.4} castShadow={true} color={"#111111"} fontSize={1} font="/fonts/Inter-Bold.ttf">
                         Github Here
                     </Text>
                 </mesh> 
@@ -146,7 +147,7 @@ function PageMesh(props: any) {
 type Page = {
     text: string;
     order: number;
-    color: string;
+    color: any;
     tagText: string;
     github_url?: string;
 }
@@ -219,17 +220,19 @@ export function ThreeBackground(props: any) {
             var software = await getSoftware();
             console.log(software);
 
-            var pages:Page[] = [
+            var pages:Page[] = [/*
                 {text: props.text, order: 1, color: "blue", tagText: "Home"},
                 {text: "Another thing here!", order: 2, color: "olive", tagText: "Software"},
                 {text: "Page 3", order: 3, color: "forestgreen", tagText: "Music"},
                 {text: "Page 4", order: 4, color: "darkmagenta", tagText: "Experience"},
                 {text: "Final Paage", order: 5, color: "HotPink", tagText: "Socials"},
-            ]
+            */]
 
             for(var i = 0; i<software.length; i++) {
 
-                pages.push({text: software[i].description, order: i+6, color: "red", tagText: software[i].title, github_url: software[i].github_url})
+                var thisColor = new Color(Math.random(),Math.random(),Math.random());
+
+                pages.push({text: software[i].description, order: i+1, color: thisColor, tagText: software[i].title, github_url: software[i].github_url})
             };
             setPages(pages);
         }
