@@ -73,7 +73,7 @@ function PageMesh(props: PageMeshProps) {
     const modelRef = createRef<THREE.Group>();
 
     const [opacity, setOpacity] = useState<number>(0);
-
+    const [isLinkHovered, setIsLinkHovered] = useState<boolean>(false);
 
     const [startingZ, setStartingZ] = useState<number>(-(props.page.order/8));
     const [settledZ, setSettledZ] = useState<number>(-((props.page.order/8)+2));
@@ -126,10 +126,13 @@ function PageMesh(props: PageMeshProps) {
             </Text>
             <Text scale={0.075} position={[-2.0575,1.4,0.125]} color={'#FFFFFF'} fillOpacity={opacity} fontSize={0.75}  outlineColor={0xaaaaba} letterSpacing={0.25} outlineWidth={0.0333} outlineBlur={0.75} castShadow>{props.page.project.title} </Text>
             {props.page.order == 1 && props.page.project.project_link != undefined &&
-                <mesh scale={[0.4,0.2,0.4]} rotation={[-Math.PI/2, 0, 0]} position={[1.5,-0.6,0.2]} frustumCulled onClick={() => {window.open(props.page.project.project_link)}}>
+                <mesh scale={[0.4,0.2,0.4]} rotation={[-Math.PI/2, 0, 0]} position={[1.5,-0.6,0.2]} frustumCulled onClick={() => {window.open(props.page.project.project_link)}} onPointerOver={() => {
+                    console.log("Hovered");
+                    setIsLinkHovered(true)
+                    }} onPointerLeave={() => setIsLinkHovered(false)}>
                     
                     <coneGeometry />
-                    <meshBasicMaterial color={props.page.project.color} reflectivity={0.9} transparent opacity={opacity}/>
+                    <meshBasicMaterial color={props.page.project.color} alphaHash={isLinkHovered} reflectivity={0.9} transparent opacity={opacity-(isLinkHovered ? 0.1 : 0.5)}/>
                     <Text scale={[0.5,0.5,0.5]} rotation={[Math.PI/2, 0, 0]} position={[0,-1,0]} maxWidth={1} fillOpacity={opacity} outlineColor={"#FFF"} outlineWidth={0.1} outlineOpacity={opacity/1.4} castShadow={true} color={"#020001"}  fontSize={1} font="/fonts/Inter-Bold.ttf">
                         {props.page.project.link_label}
                     </Text>
