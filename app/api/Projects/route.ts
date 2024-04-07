@@ -8,7 +8,7 @@ export async function GET() {
         driver: sqlite3.Database
       })  
       // Perform a database query to retrieve all items from the "items" table
-    const items =  await db.all("SELECT * FROM software");
+    const items =  await db.all("SELECT * FROM tblProjects");
 
     // Return the items as a JSON response with status 200
     return new Response(JSON.stringify(items), {
