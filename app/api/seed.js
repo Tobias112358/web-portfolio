@@ -36,6 +36,14 @@ async function setup() {
     "#15b0ab"
   )
   
+  await db.run(
+    'INSERT INTO tblProjects (title, project_link, description, link_label, color) VALUES (?, ?, ?, ?, ?)',
+    'COFF - Music Project',
+    'https://soundcloud.com/user-959442736', 
+    'An Electro-Pop music project consisting of Chris Skottun and I. Music performed, composed, produced and distributed by us.',
+    "Sound Cloud",
+    "#ff8c19"
+  )
   // Close connection
   await db.close()  
 }
